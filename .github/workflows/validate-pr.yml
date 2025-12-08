@@ -1,7 +1,7 @@
-name: Validate PR Tags (Demo Only)
+name: Validate PR Tags
 
-# NOTE: This workflow demonstrates tag validation but won't block merges
-# In production repos, make this a required status check to enforce tagging
+# This workflow will FAIL if tag violations are detected
+# To block PR merges, add this as a required status check in branch protection
 
 on:
   pull_request:
@@ -36,7 +36,7 @@ jobs:
         if: steps.check-scenarios.outputs.has_scenarios == 'true'
         id: validate-scenarios
         uses: ./
-        continue-on-error: true
+        # NOTE: Removed continue-on-error so violations will FAIL the check
         with:
           terraform_directory: ./test-scenarios
           required_tags: |
@@ -59,21 +59,24 @@ jobs:
             const scenariosOutcome = '${{ steps.validate-scenarios.outcome }}';
             
             if (scenariosOutcome === 'success') {
-              commentBody += '✅ **All Terraform resources have required tags!**\n\n';
-              commentBody += 'All resources in `test-scenarios/` directory passed validation.\n';
+              // SUCCESS - All tags valid
+              commentBody += '✅ **All resources have required tags**\n\n';
+              commentBody += 'Tag validation passed. All Terraform resources comply with MoJ tagging standards.\n';
             } else if (scenariosOutcome === 'failure') {
+              // FAILURE - Violations found
               commentBody += '❌ **Tag validation failed**\n\n';
               commentBody += 'Some resources are missing required tags or have invalid values.\n\n';
               commentBody += '**Required tags:**\n';
-              commentBody += '- `business-unit` (allowed: HMPPS, OPG, LAA, Central Digital, Technology Services, HMCTS, CICA, Platforms)\n';
+              commentBody += '- `business-unit` (HMPPS, OPG, LAA, Central Digital, Technology Services, HMCTS, CICA, Platforms)\n';
               commentBody += '- `application` (any non-empty value)\n';
               commentBody += '- `owner` (format: "Team: email@example.com")\n';
-              commentBody += '- `is-production` (allowed: "true", "false")\n';
+              commentBody += '- `is-production` ("true" or "false")\n';
               commentBody += '- `service-area` (any non-empty value)\n\n';
-              commentBody += '**Check the workflow logs for detailed violation information.**\n';
+              commentBody += '**Check the [workflow logs](${context.payload.repository.html_url}/actions/runs/${context.runId}) for detailed violation information.**\n';
             } else if (scenariosOutcome === 'skipped') {
-              commentBody += '⏭️ **No test-scenarios directory found**\n\n';
-              commentBody += 'Tag validation skipped - no Terraform files to validate.\n';
+              // SKIPPED - No Terraform files found
+              commentBody += 'ℹ️ **No Terraform files to validate**\n\n';
+              commentBody += 'Tag validation skipped - no `.tf` files found in changed paths.\n';
             }
             
             commentBody += '\n---\n';
