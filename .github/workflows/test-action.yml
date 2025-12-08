@@ -15,10 +15,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Copy valid terraform to separate directory
+        run: |
+          mkdir -p test-valid
+          cp test-terraform/simple-valid.tf test-valid/
+
       - name: Test Action with Valid Terraform
         uses: ./  # Uses the action in this repo
         with:
-          terraform_directory: ./test-terraform
+          terraform_directory: ./test-valid
           required_tags: |
             business-unit
             application
