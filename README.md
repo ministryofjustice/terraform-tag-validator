@@ -32,7 +32,9 @@ Pre-deployment validation via GitHub Actions that:
 
 ## Usage
 
-Add to your repository's workflow:
+### 1. Add Workflow to Your Repository
+
+Create `.github/workflows/validate-terraform-tags.yml`:
 
 ```yaml
 name: Terraform Tag Validation
@@ -47,7 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - uses: YOUR-USERNAME/tag-enforcement-test@v1
+      - uses: FolarinOyenuga/tag-enforcement-test@v1
         with:
           terraform_directory: ./terraform
           required_tags: |
@@ -57,6 +59,18 @@ jobs:
             is-production
             service-area
 ```
+
+### 2. Enforce in Branch Protection
+
+To **block PRs** with invalid tags:
+
+1. Go to **Settings** → **Rules** → **Rulesets**
+2. Create new **Branch ruleset**
+3. Target: `main` branch
+4. Enable: **Require status checks to pass**
+5. Add required check: `validate-tags` (or your job name)
+
+**This ensures PRs cannot merge until all resources have proper tags.**
 
 ## Required Tags (MoJ Standard)
 
