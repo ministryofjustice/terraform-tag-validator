@@ -58,6 +58,7 @@ jobs:
             owner
             is-production
             service-area
+            environment-name
 ```
 
 ### 2. Enforce in Branch Protection
@@ -74,13 +75,14 @@ To **block PRs** with invalid tags:
 
 ## Required Tags (MoJ Standard)
 
-| Tag | Description | Example |
-|-----|-------------|---------|
-| `business-unit` | HMPPS, OPG, LAA, etc. | `Platforms` |
-| `application` | Service name | `Cloud Platform` |
-| `owner` | Team: email format | `WebOps: webops@justice.gov.uk` |
-| `is-production` | true or false | `true` |
-| `service-area` | Team's service area | `Cloud Optimisation` |
+| Tag | Description | Example | Validation |
+|-----|-------------|---------|------------|
+| `business-unit` | Business unit | `Platforms` | Must be: HMPPS, OPG, LAA, Central Digital, Technology Services, HMCTS, CICA, or Platforms |
+| `application` | Service name | `Cloud Platform` | Any non-empty value |
+| `owner` | Team and email | `WebOps: webops@justice.gov.uk` | Format: `Team Name: email@domain.com` |
+| `is-production` | Production status | `true` | Must be: `true` or `false` |
+| `service-area` | Team's service area | `Cloud Optimisation` | Any non-empty value |
+| `environment-name` | Environment type | `production` | Must be: production, staging, test, or development |
 
 ## Local Testing
 

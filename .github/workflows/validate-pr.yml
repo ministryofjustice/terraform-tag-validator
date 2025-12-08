@@ -45,6 +45,7 @@ jobs:
             owner
             is-production
             service-area
+            environment-name
       
       # Post results as PR comment
       - name: Post Validation Results
@@ -69,9 +70,10 @@ jobs:
               commentBody += '**Required tags:**\n';
               commentBody += '- `business-unit` (HMPPS, OPG, LAA, Central Digital, Technology Services, HMCTS, CICA, Platforms)\n';
               commentBody += '- `application` (any non-empty value)\n';
-              commentBody += '- `owner` (format: "Team: email@example.com")\n';
+              commentBody += '- `owner` (format: "Team Name: email@example.com")\n';
               commentBody += '- `is-production` ("true" or "false")\n';
-              commentBody += '- `service-area` (any non-empty value)\n\n';
+              commentBody += '- `service-area` (any non-empty value)\n';
+              commentBody += '- `environment-name` (production, staging, test, development)\n\n';
               commentBody += '**Check the [workflow logs](${context.payload.repository.html_url}/actions/runs/${context.runId}) for detailed violation information.**\n';
             } else if (scenariosOutcome === 'skipped') {
               // SKIPPED - No Terraform files found

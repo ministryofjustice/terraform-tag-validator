@@ -16,9 +16,18 @@ REQUIRED_TAGS = {
         "Technology Services", "HMCTS", "CICA", "Platforms"
     ],
     "application": None,  # Any value OK
-    "owner": None,  # Format: "team-name: team-email"
+    "owner": None,  # Format validated by regex below
     "is-production": ["true", "false"],
-    "service-area": None  # Any value OK
+    "service-area": None,  # Any value OK
+    "environment-name": ["production", "staging", "test", "development"]
+}
+
+# Tag format validation (regex patterns)
+TAG_FORMATS = {
+    "owner": {
+        "pattern": r'^.+:\s+\S+@\S+\.\S+$',
+        "description": "Must be format: '<team-name>: <team-email>' (e.g., 'WebOps: webops@digital.justice.gov.uk')"
+    }
 }
 
 # AWS resources that support tagging
@@ -154,15 +163,27 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
                 tag_value = tags[tag]
                 if not tag_value or str(tag_value).strip() == '':
                     missing_tags.append(f"{tag} (empty value)")
-                elif tag in REQUIRED_TAGS and REQUIRED_TAGS[tag] is not None:
-                    # Validate against allowed values
-                    allowed_values = REQUIRED_TAGS[tag]
-                    if tag_value not in allowed_values:
-                        invalid_tags.append({
-                            'tag': tag,
-                            'value': tag_value,
-                            'allowed': allowed_values
-                        })
+                else:
+                    # Validate against allowed values (if specified)
+                    if tag in REQUIRED_TAGS and REQUIRED_TAGS[tag] is not None:
+                        allowed_values = REQUIRED_TAGS[tag]
+                        if tag_value not in allowed_values:
+                            invalid_tags.append({
+                                'tag': tag,
+                                'value': tag_value,
+                                'allowed': allowed_values
+                            })
+                    
+                    # Validate tag format (if specified)
+                    if tag in TAG_FORMATS:
+                        format_spec = TAG_FORMATS[tag]
+                        pattern = format_spec['pattern']
+                        if not re.match(pattern, str(tag_value)):
+                            invalid_tags.append({
+                                'tag': tag,
+                                'value': tag_value,
+                                'format': format_spec['description']
+                            })
         
         # Find source location
         location = find_resource_location(resource_address, terraform_dir)
@@ -214,10 +235,15 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
         elif v['type'] == 'invalid':
             tag = v['tag']
             value = v['value']
-            allowed = ', '.join(v['allowed'])
             print(f"  ❌ {resource}{location_str}")
             print(f"     Invalid value for '{tag}': '{value}'")
-            print(f"     Allowed values: {allowed}\n")
+            
+            # Show either allowed values or format requirement
+            if 'allowed' in v:
+                allowed = ', '.join(v['allowed'])
+                print(f"     Allowed values: {allowed}\n")
+            elif 'format' in v:
+                print(f"     {v['format']}\n")
     
     return 1
 

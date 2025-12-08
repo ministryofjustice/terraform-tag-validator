@@ -30,6 +30,7 @@ jobs:
             owner
             is-production
             service-area
+            environment-name
 
   test-invalid-terraform:
     name: Test with Invalid Terraform (Expected to Fail)
@@ -56,6 +57,7 @@ jobs:
             owner
             is-production
             service-area
+            environment-name
 
       - name: Verify Failure
         if: steps.test-invalid.outcome == 'success'
