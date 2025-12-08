@@ -79,9 +79,6 @@ jobs:
               commentBody += 'Tag validation skipped - no `.tf` files found in changed paths.\n';
             }
             
-            commentBody += '\n---\n';
-            commentBody += `**Workflow:** [${context.workflow}](${context.payload.repository.html_url}/actions/runs/${context.runId})\n`;
-            
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

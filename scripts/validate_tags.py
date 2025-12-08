@@ -5,7 +5,9 @@ Validates that all Terraform resources have required MoJ tags.
 import json
 import sys
 import re
-from typing import Dict, List, Set
+import os
+import glob
+from typing import Dict, List, Set, Optional, Tuple
 
 # MoJ tagging standard
 REQUIRED_TAGS = {
@@ -63,6 +65,42 @@ def parse_required_tags(tags_input: str) -> List[str]:
     return tags
 
 
+def find_resource_location(resource_address: str, terraform_dir: str = '.') -> Optional[Tuple[str, int]]:
+    """
+    Find the file and line number where a resource is defined.
+    Returns (filename, line_number) or None if not found.
+    """
+    # Extract resource type and name from address
+    # e.g., "aws_s3_bucket.my_bucket" -> type="aws_s3_bucket", name="my_bucket"
+    match = re.match(r'([^.]+)\.(.+)', resource_address)
+    if not match:
+        return None
+    
+    resource_type, resource_name = match.groups()
+    
+    # Pattern to match resource definitions
+    # e.g., resource "aws_s3_bucket" "my_bucket" {
+    pattern = re.compile(
+        rf'resource\s+"({resource_type})"\s+"({resource_name})"\s*\{{',
+        re.MULTILINE
+    )
+    
+    # Search all .tf files
+    for tf_file in glob.glob(os.path.join(terraform_dir, '*.tf')):
+        try:
+            with open(tf_file, 'r') as f:
+                content = f.read()
+                match = pattern.search(content)
+                if match:
+                    # Count line number
+                    line_num = content[:match.start()].count('\n') + 1
+                    return (os.path.basename(tf_file), line_num)
+        except Exception:
+            continue
+    
+    return None
+
+
 def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
     """
     Validate tags in Terraform plan JSON.
@@ -74,6 +112,9 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
     
     with open(plan_file, 'r') as f:
         plan = json.load(f)
+    
+    # Get terraform directory (where .tf files are)
+    terraform_dir = os.path.dirname(os.path.abspath(plan_file))
     
     violations = []
     resources_checked = 0
@@ -123,10 +164,14 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
                             'allowed': allowed_values
                         })
         
+        # Find source location
+        location = find_resource_location(resource_address, terraform_dir)
+        
         # Record violations
         if missing_tags:
             violations.append({
                 'resource': resource_address,
+                'location': location,
                 'type': 'missing',
                 'tags': missing_tags
             })
@@ -135,6 +180,7 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
             for invalid in invalid_tags:
                 violations.append({
                     'resource': resource_address,
+                    'location': location,
                     'type': 'invalid',
                     'tag': invalid['tag'],
                     'value': invalid['value'],
@@ -153,15 +199,23 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
     
     for v in violations:
         resource = v['resource']
+        location = v.get('location')
+        
+        # Format location
+        location_str = ""
+        if location:
+            filename, line_num = location
+            location_str = f" ({filename}:{line_num})"
+        
         if v['type'] == 'missing':
             missing = ', '.join(v['tags'])
-            print(f"  ❌ {resource}")
+            print(f"  ❌ {resource}{location_str}")
             print(f"     Missing tags: {missing}\n")
         elif v['type'] == 'invalid':
             tag = v['tag']
             value = v['value']
             allowed = ', '.join(v['allowed'])
-            print(f"  ❌ {resource}")
+            print(f"  ❌ {resource}{location_str}")
             print(f"     Invalid value for '{tag}': '{value}'")
             print(f"     Allowed values: {allowed}\n")
     
