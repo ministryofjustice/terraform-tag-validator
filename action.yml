@@ -1,0 +1,25 @@
+name: 'Validate Terraform Tags'
+description: 'Ensures all Terraform resources have mandatory MoJ tags'
+author: 'Folarin Oyenuga'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  terraform_directory:
+    description: 'Path to Terraform directory (relative to repository root)'
+    required: false
+    default: '.'
+  required_tags:
+    description: |
+      List of required tags (comma-separated or newline-separated).
+      Example: "business-unit,application,owner" or multiline format.
+    required: true
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    INPUT_TERRAFORM_DIRECTORY: ${{ inputs.terraform_directory }}
+    INPUT_REQUIRED_TAGS: ${{ inputs.required_tags }}

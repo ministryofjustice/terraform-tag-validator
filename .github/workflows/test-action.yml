@@ -1,0 +1,64 @@
+name: Test Tag Enforcement Action
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-valid-terraform:
+    name: Test with Valid Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test Action with Valid Terraform
+        uses: ./  # Uses the action in this repo
+        with:
+          terraform_directory: ./test-terraform
+          required_tags: |
+            business-unit
+            application
+            owner
+            is-production
+            service-area
+
+  test-invalid-terraform:
+    name: Test with Invalid Terraform (Expected to Fail)
+    runs-on: ubuntu-latest
+    continue-on-error: true  # Allow this job to fail
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy invalid terraform to separate directory
+        run: |
+          mkdir -p test-invalid
+          cp test-terraform/invalid.tf test-invalid/
+
+      - name: Test Action with Invalid Terraform
+        id: test-invalid
+        uses: ./
+        continue-on-error: true
+        with:
+          terraform_directory: ./test-invalid
+          required_tags: |
+            business-unit
+            application
+            owner
+            is-production
+            service-area
+
+      - name: Verify Failure
+        if: steps.test-invalid.outcome == 'success'
+        run: |
+          echo "❌ Test failed: Invalid Terraform should have failed validation"
+          exit 1
+
+      - name: Confirm Expected Failure
+        if: steps.test-invalid.outcome == 'failure'
+        run: |
+          echo "✅ Test passed: Invalid Terraform correctly failed validation"

@@ -1,0 +1,38 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl
+plan.tfplan
+plan.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+test-invalid/
+test-simple/
+test-simple-invalid/
+test-empty-values/
+
+# Documentation (kept separate from repo)
+LOCAL-TESTING.md
+GITHUB-SETUP.md
