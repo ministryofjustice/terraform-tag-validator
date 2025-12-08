@@ -95,7 +95,11 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
         
         # Get tags from the resource
         after = resource.get('change', {}).get('after', {})
-        tags = after.get('tags', {})
+        tags = after.get('tags')
+        
+        # Handle resources with no tags block at all (tags = None or other falsy values)
+        if not isinstance(tags, dict):
+            tags = {}
         
         # Check each required tag
         missing_tags = []
