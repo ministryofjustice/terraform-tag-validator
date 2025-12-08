@@ -24,10 +24,11 @@ resource "aws_s3_bucket" "example_valid" {
   bucket = "my-test-bucket-valid-${formatdate("YYYYMMDDhhmmss", timestamp())}"
 
   tags = {
-    business-unit = "Platforms"
-    application   = "Tag Enforcement Testing"
-    owner         = "COAT Team: coat@digital.justice.gov.uk"
-    is-production = "false"
-    service-area  = "Cloud Optimisation"
+    business-unit    = "Platforms"
+    application      = "Tag Enforcement Testing"
+    owner            = "COAT Team: coat@digital.justice.gov.uk"
+    is-production    = "false"
+    service-area     = "Cloud Optimisation"
+    environment-name = "test"
   }
 }

@@ -3,11 +3,12 @@ resource "aws_s3_bucket" "valid_bucket" {
   bucket = "valid-bucket-${formatdate("YYYYMMDDhhmmss", timestamp())}"
 
   tags = {
-    business-unit = "OPG"
-    application   = "Storage Service"
-    owner         = "OPG Team: opg@digital.justice.gov.uk"
-    is-production = "true"
-    service-area  = "Public Guardian"
+    business-unit    = "OPG"
+    application      = "Storage Service"
+    owner            = "OPG Team: opg@digital.justice.gov.uk"
+    is-production    = "true"
+    service-area     = "Public Guardian"
+    environment-name = "production"
   }
 }
 
@@ -51,11 +52,12 @@ resource "aws_lambda_function" "valid_lambda" {
   runtime       = "python3.12"
 
   tags = {
-    business-unit = "CICA"
-    application   = "Compensation Claims"
-    owner         = "CICA Team: cica@digital.justice.gov.uk"
-    is-production = "false"
-    service-area  = "Victim Services"
+    business-unit    = "CICA"
+    application      = "Compensation Claims"
+    owner            = "CICA Team: cica@digital.justice.gov.uk"
+    is-production    = "false"
+    service-area     = "Victim Services"
+    environment-name = "staging"
   }
 }
 
