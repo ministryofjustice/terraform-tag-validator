@@ -78,9 +78,9 @@ required_tags:
   environment-name:
     allowed_values: [production, staging, test, development]
 
+# Optional: Only for AWS-managed resources you can't tag
 exclude_resources:
-  - "aws_s3_bucket.terraform_state"
-  - "*.backup_*"
+  # - "*.backup_*"
 ```
 
 **Use in workflow:**
@@ -99,7 +99,7 @@ exclude_resources:
 ```
 
 **Benefits:**
-- ✅ **Exclude resources** (terraform state, backups, etc.)
+- ✅ **Exclude edge cases** (AWS-managed backups, auto-created resources)
 - ✅ **Future-proof** - Update standards without code changes
 - ✅ **Department-specific** - Different teams can use different configs
 - ✅ **Flexible validation** - Mix allowlists and regex patterns

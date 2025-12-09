@@ -42,13 +42,15 @@ required_tags:
       - development
 
 # Optional: Exclude specific resources from validation
+#
+# Use this ONLY for resources that:
+# - Are auto-created by AWS (backups, snapshots)
+# - Cannot be tagged due to AWS limitations
+# - Are managed outside your terraform codebase
+#
+# If a resource is in your terraform code, TAG IT (including state buckets).
+# Cost allocation requires all infrastructure to be tagged.
 exclude_resources:
-  # Uncomment to exclude terraform state management resources
-  # - "aws_s3_bucket.terraform_state"
-  # - "aws_dynamodb_table.terraform_locks"
-  
-  # Uncomment to exclude backup resources
+  # Example: Exclude AWS-managed backups (uncomment if needed)
   # - "*.backup_*"
-  
-  # Uncomment to exclude cloudwatch resources
-  # - "aws_cloudwatch_*"
+  # - "*_backup"
