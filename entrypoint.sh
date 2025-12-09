@@ -4,6 +4,7 @@ set -e
 # Get inputs from environment variables
 TERRAFORM_DIR="${INPUT_TERRAFORM_DIRECTORY:-.}"
 REQUIRED_TAGS="${INPUT_REQUIRED_TAGS}"
+CONFIG_FILE="${INPUT_CONFIG_FILE}"
 
 echo "======================================"
 echo "🔍 Terraform Tag Validation"
@@ -11,6 +12,9 @@ echo "======================================"
 echo "📁 Directory: $TERRAFORM_DIR"
 echo "📋 Required tags:"
 echo "$REQUIRED_TAGS" | sed 's/^/  - /'
+if [ -n "$CONFIG_FILE" ]; then
+    echo "⚙️  Config file: $CONFIG_FILE"
+fi
 echo "======================================"
 
 # Navigate to Terraform directory
@@ -48,7 +52,11 @@ terraform show -json plan.tfplan > plan.json || {
 
 # Validate tags
 echo "✅ Validating tags..."
-python3 /scripts/validate_tags.py plan.json "$REQUIRED_TAGS"
+if [ -n "$CONFIG_FILE" ]; then
+    python3 /scripts/validate_tags.py plan.json "$REQUIRED_TAGS" "$CONFIG_FILE"
+else
+    python3 /scripts/validate_tags.py plan.json "$REQUIRED_TAGS"
+fi
 
 exit_code=$?
 

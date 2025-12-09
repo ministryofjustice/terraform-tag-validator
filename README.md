@@ -2,6 +2,8 @@
 
 **Author:** Folarin Oyenuga
 
+> ⚠️ **Work in Progress** 😊
+
 Docker-based GitHub Action that validates Terraform resources have mandatory MoJ tags before deployment.
 
 ## Problem
@@ -61,7 +63,50 @@ jobs:
             environment-name
 ```
 
-### 2. Enforce in Branch Protection
+### 2. Advanced: Use YAML Configuration (Optional)
+
+For more flexibility, use a YAML config file to define tag schemas:
+
+**Create `moj-tags-config.yml`:**
+```yaml
+required_tags:
+  business-unit:
+    allowed_values: [HMPPS, OPG, LAA, HMCTS, CICA, Platforms]
+  owner:
+    pattern: "^.+:\\s+\\S+@\\S+\\.\\S+$"
+    pattern_description: "Format: 'Team Name: email@domain.com'"
+  environment-name:
+    allowed_values: [production, staging, test, development]
+
+exclude_resources:
+  - "aws_s3_bucket.terraform_state"
+  - "*.backup_*"
+```
+
+**Use in workflow:**
+```yaml
+- uses: FolarinOyenuga/tag-enforcement-test@v1
+  with:
+    terraform_directory: ./terraform
+    config_file: ./moj-tags-config.yml
+    required_tags: |
+      business-unit
+      application
+      owner
+      is-production
+      service-area
+      environment-name
+```
+
+**Benefits:**
+- ✅ **Exclude resources** (terraform state, backups, etc.)
+- ✅ **Future-proof** - Update standards without code changes
+- ✅ **Department-specific** - Different teams can use different configs
+- ✅ **Flexible validation** - Mix allowlists and regex patterns
+
+See [`moj-tags-config.yml`](moj-tags-config.yml) for a complete example.
+
+### 3. Enforce in Branch Protection
 
 To **block PRs** with invalid tags:
 
@@ -96,6 +141,26 @@ docker run --rm \
   -e INPUT_REQUIRED_TAGS="business-unit,application,owner,is-production,service-area" \
   tag-enforcement:local
 ```
+
+## Running Tests
+
+Unit tests ensure the action works correctly:
+
+```bash
+# Install test dependencies
+pip install -r requirements.txt
+
+# Run tests
+pytest tests/test_validator.py -v
+```
+
+**Tests cover:**
+- ✅ MoJ business unit validation
+- ✅ Owner email format validation
+- ✅ Environment name validation
+- ✅ Missing tag detection
+- ✅ Empty value detection
+- ✅ Resource location parsing
 
 ## Why Docker?
 

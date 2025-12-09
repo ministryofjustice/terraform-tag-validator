@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
 """
 Validates that all Terraform resources have required MoJ tags.
+Supports both hardcoded defaults and YAML configuration files.
 """
 import json
 import sys
 import re
 import os
 import glob
+import fnmatch
 from typing import Dict, List, Set, Optional, Tuple
 
-# MoJ tagging standard
-REQUIRED_TAGS = {
+try:
+    import yaml
+    YAML_AVAILABLE = True
+except ImportError:
+    YAML_AVAILABLE = False
+
+# Default MoJ tagging standard (used if no config file provided)
+DEFAULT_REQUIRED_TAGS = {
     "business-unit": [
         "HMPPS", "OPG", "LAA", "Central Digital",
         "Technology Services", "HMCTS", "CICA", "Platforms"
@@ -22,13 +30,18 @@ REQUIRED_TAGS = {
     "environment-name": ["production", "staging", "test", "development"]
 }
 
-# Tag format validation (regex patterns)
-TAG_FORMATS = {
+# Default tag format validation (regex patterns)
+DEFAULT_TAG_FORMATS = {
     "owner": {
         "pattern": r'^.+:\s+\S+@\S+\.\S+$',
         "description": "Must be format: '<team-name>: <team-email>' (e.g., 'WebOps: webops@digital.justice.gov.uk')"
     }
 }
+
+# Global config (set by load_config or defaults)
+REQUIRED_TAGS = DEFAULT_REQUIRED_TAGS.copy()
+TAG_FORMATS = DEFAULT_TAG_FORMATS.copy()
+EXCLUDE_RESOURCES: List[str] = []
 
 # AWS resources that support tagging
 TAGGABLE_RESOURCES = {
@@ -59,6 +72,87 @@ TAGGABLE_RESOURCES = {
     "aws_api_gateway_rest_api",
     "aws_apigatewayv2_api",
 }
+
+
+def load_config(config_path: str) -> bool:
+    """
+    Load tag validation configuration from a YAML file.
+    Returns True if config was loaded successfully, False otherwise.
+    Falls back to default MoJ config if file not found or YAML not available.
+    """
+    global REQUIRED_TAGS, TAG_FORMATS, EXCLUDE_RESOURCES, TAGGABLE_RESOURCES
+    
+    if not YAML_AVAILABLE:
+        print("⚠️  PyYAML not installed. Using default MoJ configuration.")
+        print("   Install with: pip install pyyaml")
+        return False
+    
+    if not os.path.exists(config_path):
+        print(f"⚠️  Config file not found: {config_path}")
+        print("   Using default MoJ configuration.")
+        return False
+    
+    try:
+        with open(config_path, 'r') as f:
+            config = yaml.safe_load(f)
+        
+        if not config:
+            return False
+        
+        # Parse required_tags section
+        if 'required_tags' in config:
+            REQUIRED_TAGS = {}
+            TAG_FORMATS = {}
+            
+            for tag_name, tag_config in config['required_tags'].items():
+                if isinstance(tag_config, dict):
+                    # Check for allowed_values
+                    if 'allowed_values' in tag_config:
+                        REQUIRED_TAGS[tag_name] = tag_config['allowed_values']
+                    else:
+                        REQUIRED_TAGS[tag_name] = None
+                    
+                    # Check for regex pattern
+                    if 'pattern' in tag_config:
+                        TAG_FORMATS[tag_name] = {
+                            'pattern': tag_config['pattern'],
+                            'description': tag_config.get('pattern_description', 
+                                                         f'Must match pattern: {tag_config["pattern"]}')
+                        }
+                else:
+                    # Simple tag without constraints
+                    REQUIRED_TAGS[tag_name] = None
+        
+        # Parse exclude_resources section
+        if 'exclude_resources' in config:
+            EXCLUDE_RESOURCES = config['exclude_resources'] or []
+        
+        # Parse taggable_resources section (optional override)
+        if 'taggable_resources' in config:
+            TAGGABLE_RESOURCES = set(config['taggable_resources'])
+        
+        print(f"✅ Loaded configuration from {config_path}")
+        return True
+        
+    except yaml.YAMLError as e:
+        print(f"❌ Error parsing YAML config: {e}")
+        print("   Using default MoJ configuration.")
+        return False
+    except Exception as e:
+        print(f"❌ Error loading config: {e}")
+        print("   Using default MoJ configuration.")
+        return False
+
+
+def should_exclude_resource(resource_address: str) -> bool:
+    """
+    Check if a resource should be excluded from validation.
+    Supports exact matches and wildcard patterns.
+    """
+    for pattern in EXCLUDE_RESOURCES:
+        if fnmatch.fnmatch(resource_address, pattern):
+            return True
+    return False
 
 
 def parse_required_tags(tags_input: str) -> List[str]:
@@ -139,6 +233,10 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
         
         # Only check taggable resources
         if resource_type not in TAGGABLE_RESOURCES:
+            continue
+        
+        # Check if resource should be excluded
+        if should_exclude_resource(resource_address):
             continue
         
         resources_checked += 1
@@ -249,12 +347,17 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: validate_tags.py <plan.json> <required_tags>")
+    if len(sys.argv) < 3:
+        print("Usage: validate_tags.py <plan.json> <required_tags> [config_file]")
         sys.exit(1)
     
     plan_file = sys.argv[1]
     required_tags = sys.argv[2]
+    config_file = sys.argv[3] if len(sys.argv) > 3 else None
+    
+    # Load config if provided
+    if config_file:
+        load_config(config_file)
     
     exit_code = validate_terraform_plan(plan_file, required_tags)
     sys.exit(exit_code)
