@@ -120,6 +120,8 @@ To **block PRs** with invalid tags:
 
 ## Required Tags (MoJ Standard)
 
+Based on the [official MoJ tagging standard](https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html).
+
 | Tag | Description | Example | Validation |
 |-----|-------------|---------|------------|
 | `business-unit` | Business unit | `Platforms` | Must be: HMPPS, OPG, LAA, Central Digital, Technology Services, HMCTS, CICA, or Platforms |
