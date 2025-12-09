@@ -16,6 +16,13 @@ inputs:
       List of required tags (comma-separated or newline-separated).
       Example: "business-unit,application,owner" or multiline format.
     required: true
+  config_file:
+    description: |
+      Optional: Path to YAML configuration file defining tag schemas.
+      If provided, overrides hardcoded tag definitions.
+      Example: "./moj-tags-config.yml"
+    required: false
+    default: ''
 
 runs:
   using: 'docker'
@@ -23,3 +30,4 @@ runs:
   env:
     INPUT_TERRAFORM_DIRECTORY: ${{ inputs.terraform_directory }}
     INPUT_REQUIRED_TAGS: ${{ inputs.required_tags }}
+    INPUT_CONFIG_FILE: ${{ inputs.config_file }}

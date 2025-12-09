@@ -20,7 +20,11 @@ RUN wget -q https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraf
     rm terraform_${TERRAFORM_VERSION}_linux_amd64.zip && \
     terraform version
 
-# Copy scripts (no external Python dependencies needed - uses stdlib only)
+# Install Python dependencies
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+# Copy scripts
 COPY scripts/ /scripts/
 COPY entrypoint.sh /entrypoint.sh
 

@@ -1,0 +1,54 @@
+# Ministry of Justice Tag Validation Configuration
+# Official MoJ tagging standard: https://cloud-optimisation-and-accountability.justice.gov.uk/documentation/finops-and-greenops-at-moj/standards/tagging.html
+
+required_tags:
+  business-unit:
+    description: "MoJ Business Unit"
+    allowed_values:
+      - HMPPS
+      - OPG
+      - LAA
+      - Central Digital
+      - Technology Services
+      - HMCTS
+      - CICA
+      - Platforms
+  
+  application:
+    description: "Full name of the application or service"
+    # No restrictions - any non-empty value allowed
+  
+  owner:
+    description: "Team responsible for the service"
+    pattern: "^.+:\\s+\\S+@\\S+\\.\\S+$"
+    pattern_description: "Must be format: '<team-name>: <team-email>' (e.g., 'WebOps: webops@digital.justice.gov.uk')"
+  
+  is-production:
+    description: "Whether this is a production resource"
+    allowed_values:
+      - "true"
+      - "false"
+  
+  service-area:
+    description: "Full name of the Service Area"
+    # No restrictions - any non-empty value allowed
+  
+  environment-name:
+    description: "Deployment environment"
+    allowed_values:
+      - production
+      - staging
+      - test
+      - development
+
+# Optional: Exclude specific resources from validation
+exclude_resources:
+  # Uncomment to exclude terraform state management resources
+  # - "aws_s3_bucket.terraform_state"
+  # - "aws_dynamodb_table.terraform_locks"
+  
+  # Uncomment to exclude backup resources
+  # - "*.backup_*"
+  
+  # Uncomment to exclude cloudwatch resources
+  # - "aws_cloudwatch_*"

@@ -15,6 +15,10 @@ __pycache__/
 .Python
 venv/
 env/
+.pytest_cache/
+*.egg-info/
+.coverage
+htmlcov/
 
 # IDE
 .vscode/
