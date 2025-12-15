@@ -1,9 +1,5 @@
 # Terraform Tag Enforcement
 
-**Author:** Folarin Oyenuga
-
-> ⚠️ **Work in Progress** 😊
-
 Docker-based GitHub Action that validates Terraform resources have mandatory MoJ tags before deployment.
 
 ## Problem
@@ -51,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - uses: FolarinOyenuga/tag-enforcement-test@v1
+      - uses: ministryofjustice/terraform-tag-validator@v1
         with:
           terraform_directory: ./terraform
           required_tags: |
@@ -85,7 +81,7 @@ exclude_resources:
 
 **Use in workflow:**
 ```yaml
-- uses: FolarinOyenuga/tag-enforcement-test@v1
+- uses: ministryofjustice/terraform-tag-validator@v1
   with:
     terraform_directory: ./terraform
     config_file: ./moj-tags-config.yml
