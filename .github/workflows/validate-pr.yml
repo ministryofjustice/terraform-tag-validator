@@ -22,23 +22,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      # Validate test-scenarios directory if it exists
-      - name: Check if test-scenarios exists
-        id: check-scenarios
+      - name: Check if test-terraform exists
+        id: check-terraform
         run: |
-          if [ -d "test-scenarios" ]; then
-            echo "has_scenarios=true" >> $GITHUB_OUTPUT
+          if [ -d "test-terraform" ]; then
+            echo "has_terraform=true" >> $GITHUB_OUTPUT
           else
-            echo "has_scenarios=false" >> $GITHUB_OUTPUT
+            echo "has_terraform=false" >> $GITHUB_OUTPUT
           fi
       
-      - name: Validate test-scenarios (if exists)
-        if: steps.check-scenarios.outputs.has_scenarios == 'true'
+      - name: Validate test-terraform (if exists)
+        if: steps.check-terraform.outputs.has_terraform == 'true'
         id: validate-scenarios
         uses: ./
-        # NOTE: Removed continue-on-error so violations will FAIL the check
         with:
-          terraform_directory: ./test-scenarios
+          terraform_directory: ./test-terraform
           required_tags: |
             business-unit
             application
