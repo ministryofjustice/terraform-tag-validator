@@ -6,7 +6,7 @@ resource "aws_s3_bucket" "example_valid" {
     application    = "Tag Enforcement Testing"
     owner          = "COAT Team: coat@digital.justice.gov.uk"
     is-production  = "false"
-    # service-area   = "Cloud Optimisation"
+    service-area   = "Cloud Optimisation"
   }
 }
 
