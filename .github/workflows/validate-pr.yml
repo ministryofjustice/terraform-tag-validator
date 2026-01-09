@@ -51,20 +51,26 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
-            
             let commentBody = '## 🏷️ Tag Validation Results\n\n';
             
             const scenariosOutcome = '${{ steps.validate-scenarios.outcome }}';
+            const violationsSummary = `${{ steps.validate-scenarios.outputs.violations_summary }}`;
+            const violationsCount = '${{ steps.validate-scenarios.outputs.violations_count }}';
             
             if (scenariosOutcome === 'success') {
-              // SUCCESS - All tags valid
               commentBody += '✅ **All resources have required tags**\n\n';
               commentBody += 'Tag validation passed. All Terraform resources comply with MoJ tagging standards.\n';
             } else if (scenariosOutcome === 'failure') {
-              // FAILURE - Violations found
-              commentBody += '❌ **Tag validation failed**\n\n';
-              commentBody += 'Some resources are missing required tags or have invalid values.\n\n';
+              commentBody += '### Violations Found\n\n';
+              
+              if (violationsSummary && violationsSummary.trim()) {
+                commentBody += violationsSummary + '\n\n';
+              } else {
+                commentBody += '❌ **Tag validation failed**\n\n';
+                commentBody += 'Some resources are missing required tags or have invalid values.\n\n';
+              }
+              
+              commentBody += '---\n\n';
               commentBody += '**Required tags:**\n';
               commentBody += '- `business-unit` (HMPPS, OPG, LAA, Central Digital, Technology Services, HMCTS, CICA, Platforms)\n';
               commentBody += '- `application` (any non-empty value)\n';
@@ -72,9 +78,8 @@ jobs:
               commentBody += '- `is-production` ("true" or "false")\n';
               commentBody += '- `service-area` (any non-empty value)\n';
               commentBody += '- `environment-name` (production, staging, test, development)\n\n';
-              commentBody += `**Check the [workflow logs](${context.payload.repository.html_url}/actions/runs/${context.runId}) for detailed violation information.**\n`;
+              commentBody += `[View workflow logs](${context.payload.repository.html_url}/actions/runs/${context.runId})\n`;
             } else if (scenariosOutcome === 'skipped') {
-              // SKIPPED - No Terraform files found
               commentBody += 'ℹ️ **No Terraform files to validate**\n\n';
               commentBody += 'Tag validation skipped - no `.tf` files found in changed paths.\n';
             }
