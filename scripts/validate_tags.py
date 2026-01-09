@@ -297,14 +297,18 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
         
         if invalid_tags:
             for invalid in invalid_tags:
-                violations.append({
+                violation = {
                     'resource': resource_address,
                     'location': location,
                     'type': 'invalid',
                     'tag': invalid['tag'],
-                    'value': invalid['value'],
-                    'allowed': invalid['allowed']
-                })
+                    'value': invalid['value']
+                }
+                if 'allowed' in invalid:
+                    violation['allowed'] = invalid['allowed']
+                if 'format' in invalid:
+                    violation['format'] = invalid['format']
+                violations.append(violation)
     
     # Print results
     print(f"📊 Resources checked: {resources_checked}\n")
