@@ -17,10 +17,11 @@ resource "aws_instance" "example_valid" {
   instance_type = "t2.micro"
 
   tags = {
-    business-unit  = "HMPPS"
-    application    = "Example Application"
-    owner          = "COAT Team: coat@digital.justice.gov.uk"
-    is-production  = "true"
-    service-area   = "Prisons"
+    business-unit    = "HMPPS"
+    application      = "Example Application"
+    owner            = "COAT Team: coat@digital.justice.gov.uk"
+    is-production    = "true"
+    service-area     = "Prisons"
     environment-name = "development"
+  }
 }
