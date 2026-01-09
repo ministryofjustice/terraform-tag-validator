@@ -7,6 +7,6 @@ resource "aws_s3_bucket" "valid_all_tags" {
     owner            = "COAT Team: coat@digital.justice.gov.uk"
     is-production    = "false"
     service-area     = "Cloud Optimisation"
-    environment-name = "development"
+    environment-name = " "
   }
 }
