@@ -24,6 +24,14 @@ inputs:
     required: false
     default: ''
 
+outputs:
+  violations:
+    description: 'JSON array of tag violations found'
+  violations_count:
+    description: 'Number of violations found'
+  violations_summary:
+    description: 'Human-readable summary of violations for PR comments'
+
 runs:
   using: 'docker'
   image: 'Dockerfile'
