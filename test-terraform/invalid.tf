@@ -18,7 +18,7 @@ provider "aws" {
   secret_key = "test"
 }
 
-# Example S3 bucket missing required tags
+# Example S3 bucket missing required tags - testing detailed PR comments
 resource "aws_s3_bucket" "example_missing_tags" {
   bucket = "my-test-bucket-invalid"
 
