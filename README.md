@@ -47,9 +47,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - uses: ministryofjustice/terraform-tag-validator@v1
+      - uses: ministryofjustice/terraform-tag-validator@v1.0.0 # 89104755294a4426122cfc37c42a440480626e52
         with:
-          terraform_directory: ./terraform
+          terraform_directory: ./your-terraform-path
           required_tags: |
             business-unit
             application
@@ -81,9 +81,9 @@ exclude_resources:
 
 **Use in workflow:**
 ```yaml
-- uses: ministryofjustice/terraform-tag-validator@v1
+- uses: ministryofjustice/terraform-tag-validator@v1.0.0 # 89104755294a4426122cfc37c42a440480626e52
   with:
-    terraform_directory: ./terraform
+    terraform_directory: ./your-terraform-path
     config_file: ./moj-tags-config.yml
     required_tags: |
       business-unit
