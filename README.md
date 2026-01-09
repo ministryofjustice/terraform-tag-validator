@@ -48,6 +48,10 @@ on:
   pull_request:
     paths: ['**.tf']
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   validate-tags:
     runs-on: ubuntu-latest
@@ -55,6 +59,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - uses: ministryofjustice/terraform-tag-validator@v1.0.0 # 89104755294a4426122cfc37c42a440480626e52
+        id: validate
         with:
           terraform_directory: ./your-terraform-directory-path
           required_tags: |
@@ -64,6 +69,35 @@ jobs:
             is-production
             service-area
             environment-name
+
+      # Optional: Post detailed violation results as a PR comment
+      - name: Post Validation Results
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          VIOLATIONS_SUMMARY: ${{ steps.validate.outputs.violations_summary }}
+          VIOLATIONS_COUNT: ${{ steps.validate.outputs.violations_count }}
+          VALIDATE_OUTCOME: ${{ steps.validate.outcome }}
+        with:
+          script: |
+            const outcome = process.env.VALIDATE_OUTCOME || '';
+            const summary = process.env.VIOLATIONS_SUMMARY || '';
+            
+            let body = '## 🏷️ Tag Validation Results\n\n';
+            
+            if (outcome === 'success') {
+              body += '✅ **All resources have required tags**\n';
+            } else {
+              body += summary ? summary + '\n\n' : '❌ **Tag validation failed**\n\n';
+              body += '---\n\n**Required tags:** `business-unit`, `application`, `owner`, `is-production`, `service-area`, `environment-name`';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
 ```
 
 ### 2. Advanced: Use YAML Configuration (Optional)
