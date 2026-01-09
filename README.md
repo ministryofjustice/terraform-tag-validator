@@ -2,6 +2,13 @@
 
 Docker-based GitHub Action that validates Terraform resources have mandatory MoJ tags before deployment.
 
+## Impact
+
+This tool ensures unattributable cloud spend due to missing or incompletely tagged resources is detected and remediated **before deployment**, enabling:
+- **Clearer cost allocation** - Every resource is traceable to a business unit and applicationion, service-area etc.
+- **Accountability** - Teams own their infrastructure costs with proper ownership tags
+- **Showback** - Accurate cost reporting back to service areas and teams
+
 ## Problem
 
 Infrastructure resources deployed without proper tags cause:
