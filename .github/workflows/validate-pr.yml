@@ -49,13 +49,17 @@ jobs:
       - name: Post Validation Results
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
+        env:
+          VIOLATIONS_SUMMARY: ${{ steps.validate-scenarios.outputs.violations_summary }}
+          VIOLATIONS_COUNT: ${{ steps.validate-scenarios.outputs.violations_count }}
+          SCENARIO_OUTCOME: ${{ steps.validate-scenarios.outcome }}
         with:
           script: |
             let commentBody = '## 🏷️ Tag Validation Results\n\n';
             
-            const scenariosOutcome = '${{ steps.validate-scenarios.outcome }}';
-            const violationsSummary = `${{ steps.validate-scenarios.outputs.violations_summary }}`;
-            const violationsCount = '${{ steps.validate-scenarios.outputs.violations_count }}';
+            const scenariosOutcome = process.env.SCENARIO_OUTCOME || '';
+            const violationsSummary = process.env.VIOLATIONS_SUMMARY || '';
+            const violationsCount = process.env.VIOLATIONS_COUNT || '0';
             
             if (scenariosOutcome === 'success') {
               commentBody += '✅ **All resources have required tags**\n\n';
