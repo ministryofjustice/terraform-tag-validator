@@ -5,8 +5,9 @@ resource "aws_s3_bucket" "example_valid" {
     business-unit  = "Platforms"
     application    = "Tag Enforcement Testing"
     owner          = "COAT Team: coat@digital.justice.gov.uk"
-    # is-production  = "false"
+    is-production  = "false"
     service-area   = "Cloud Optimisation"
+    environment-name = "development"
   }
 }
 
@@ -18,9 +19,8 @@ resource "aws_instance" "example_valid" {
   tags = {
     business-unit  = "HMPPS"
     application    = "Example Application"
-    owner          = ""
+    owner          = "COAT Team: coat@digital.justice.gov.uk"
     is-production  = "true"
     service-area   = "Prisons"
-    Name           = " "
-  }
+    environment-name = "development"
 }
