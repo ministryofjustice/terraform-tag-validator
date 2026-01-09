@@ -1,19 +1,14 @@
 resource "aws_s3_bucket" "missing_tags" {
   bucket = "missing-tags-bucket"
 
-  tags = {
-    Name = "example-bucket"
-  }
+  tags = var.missing_tags
 }
 
 resource "aws_instance" "partial_tags" {
   ami           = "ami-0c55b159cbfafe1f0"
   instance_type = "t2.micro"
 
-  tags = {
-    business-unit = "HMPPS"
-    application   = "Example Application"
-  }
+  tags = var.partial_tags
 }
 
 resource "aws_dynamodb_table" "invalid_values" {
@@ -26,12 +21,5 @@ resource "aws_dynamodb_table" "invalid_values" {
     type = "S"
   }
 
-  tags = {
-    business-unit    = "InvalidBU"
-    application      = "Test App"
-    owner            = "wrong-format"
-    is-production    = "maybe"
-    service-area     = "Test"
-    environment-name = "invalid-env"
-  }
+  tags = var.invalid_value_tags
 }
