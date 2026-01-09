@@ -1,5 +1,5 @@
-resource "aws_s3_bucket" "example_valid" {
-  bucket = "my-test-bucket-valid"
+resource "aws_s3_bucket" "test_empty_owner" {
+  bucket = "my-test-bucket-empty-owner"
 
   tags = {
     business-unit  = "Platforms"
@@ -10,8 +10,8 @@ resource "aws_s3_bucket" "example_valid" {
   }
 }
 
-# Example EC2 instance with all required tags
-resource "aws_instance" "example_valid" {
+# Example EC2 instance with empty owner tag
+resource "aws_instance" "test_empty_values" {
   ami           = "ami-0c55b159cbfafe1f0"
   instance_type = "t2.micro"
 
