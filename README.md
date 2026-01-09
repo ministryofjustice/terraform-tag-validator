@@ -18,7 +18,7 @@ Pre-deployment validation via GitHub Actions that:
 - Blocks PRs with improperly tagged resources
 - Validates tag values against MoJ standards
 - Detects missing tags and empty values
-- Runs on standard GitHub-hosted runners (no special infrastructure required)
+- Works on both GitHub-hosted and self-hosted runners
 
 ## How It Works
 
@@ -160,25 +160,9 @@ pytest tests/test_validator.py -v
 - ✅ Empty value detection
 - ✅ Resource location parsing
 
-## Runner Requirements
-
-**GitHub-hosted runners (`ubuntu-latest`) are sufficient.** No self-hosted runners required.
-
-This action performs static analysis only:
-1. Runs `terraform init` with mock credentials
-2. Generates a plan JSON (no real infrastructure access)
-3. Validates tags in Python
-
-Since it doesn't connect to real cloud infrastructure or internal networks, standard GitHub-hosted runners work perfectly.
-
-**When self-hosted runners might be considered (not required for this tool):**
-- Accessing private VPCs during `terraform plan` (not applicable here)
-- Compliance requirements (data sovereignty, air-gapped environments)
-- Cost optimization at very high volume
-
 ## Why Docker?
 
 - **Consistency:** Works identically on all runner types
 - **Self-contained:** No environment setup required
 - **Secure:** Isolated execution environment
-- **Portable:** Runs anywhere Docker is available
+- **Self-hosted friendly:** No assumptions about pre-installed tools
