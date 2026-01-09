@@ -309,12 +309,18 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
     # Print results
     print(f"📊 Resources checked: {resources_checked}\n")
     
+    # Build summary for PR comments
+    summary_lines = []
+    
     if not violations:
         print("✅ All resources have required tags!\n")
+        summary_lines.append("✅ All resources have required tags!")
+        write_outputs([], summary_lines)
         return 0
     
     # Print violations
     print(f"❌ Found {len(violations)} violation(s):\n")
+    summary_lines.append(f"❌ **Found {len(violations)} violation(s):**\n")
     
     for v in violations:
         resource = v['resource']
@@ -330,20 +336,49 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
             missing = ', '.join(v['tags'])
             print(f"  ❌ {resource}{location_str}")
             print(f"     Missing tags: {missing}\n")
+            summary_lines.append(f"- **{resource}**{location_str}")
+            summary_lines.append(f"  - Missing: `{missing}`")
         elif v['type'] == 'invalid':
             tag = v['tag']
             value = v['value']
             print(f"  ❌ {resource}{location_str}")
             print(f"     Invalid value for '{tag}': '{value}'")
+            summary_lines.append(f"- **{resource}**{location_str}")
+            summary_lines.append(f"  - Invalid `{tag}`: `{value}`")
             
             # Show either allowed values or format requirement
             if 'allowed' in v:
                 allowed = ', '.join(v['allowed'])
                 print(f"     Allowed values: {allowed}\n")
+                summary_lines.append(f"  - Allowed: `{allowed}`")
             elif 'format' in v:
                 print(f"     {v['format']}\n")
+                summary_lines.append(f"  - {v['format']}")
     
+    write_outputs(violations, summary_lines)
     return 1
+
+
+def write_outputs(violations: List[Dict], summary_lines: List[str]) -> None:
+    """Write outputs to GITHUB_OUTPUT file for action outputs."""
+    github_output = os.environ.get('GITHUB_OUTPUT')
+    if not github_output:
+        return
+    
+    try:
+        with open(github_output, 'a') as f:
+            # Write violations count
+            f.write(f"violations_count={len(violations)}\n")
+            
+            # Write violations JSON (escape for multiline)
+            violations_json = json.dumps(violations)
+            f.write(f"violations={violations_json}\n")
+            
+            # Write summary (use heredoc for multiline)
+            summary = '\n'.join(summary_lines)
+            f.write(f"violations_summary<<EOF\n{summary}\nEOF\n")
+    except Exception as e:
+        print(f"Warning: Could not write outputs: {e}")
 
 
 if __name__ == "__main__":
