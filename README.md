@@ -49,7 +49,7 @@ jobs:
       
       - uses: ministryofjustice/terraform-tag-validator@v1.0.0 # 89104755294a4426122cfc37c42a440480626e52
         with:
-          terraform_directory: ./your-terraform-path
+          terraform_directory: ./your-terraform-directory-path
           required_tags: |
             business-unit
             application
@@ -83,7 +83,7 @@ exclude_resources:
 ```yaml
 - uses: ministryofjustice/terraform-tag-validator@v1.0.0 # 89104755294a4426122cfc37c42a440480626e52
   with:
-    terraform_directory: ./your-terraform-path
+    terraform_directory: ./your-terraform-directory-path
     config_file: ./moj-tags-config.yml
     required_tags: |
       business-unit
