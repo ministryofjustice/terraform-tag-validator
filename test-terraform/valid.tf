@@ -23,11 +23,12 @@ resource "aws_s3_bucket" "example_valid" {
   bucket = "my-test-bucket-valid"
 
   tags = {
-    business-unit  = "Platforms"
-    application    = "Tag Enforcement Testing"
-    owner          = "COAT Team: coat@digital.justice.gov.uk"
-    is-production  = "false"
-    service-area   = "Cloud Optimisation"
+    business-unit    = "Platforms"
+    application      = "Tag Enforcement Testing"
+    owner            = "COAT Team: coat@digital.justice.gov.uk"
+    is-production    = "false"
+    service-area     = "Cloud Optimisation"
+    environment-name = "development"
   }
 }
 
@@ -37,11 +38,12 @@ resource "aws_instance" "example_valid" {
   instance_type = "t2.micro"
 
   tags = {
-    business-unit  = "HMPPS"
-    application    = "Example Application"
-    owner          = "Test Team: test@digital.justice.gov.uk"
-    is-production  = "true"
-    service-area   = "Prisons"
-    Name           = "example-instance"
+    business-unit    = "HMPPS"
+    application      = "Example Application"
+    owner            = "Test Team: test@digital.justice.gov.uk"
+    is-production    = "true"
+    service-area     = "Prisons"
+    environment-name = "production"
+    Name             = "example-instance"
   }
 }
