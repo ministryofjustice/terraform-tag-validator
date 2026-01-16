@@ -43,36 +43,6 @@ REQUIRED_TAGS = DEFAULT_REQUIRED_TAGS.copy()
 TAG_FORMATS = DEFAULT_TAG_FORMATS.copy()
 EXCLUDE_RESOURCES: List[str] = []
 
-# AWS resources that support tagging
-TAGGABLE_RESOURCES = {
-    "aws_s3_bucket",
-    "aws_instance",
-    "aws_db_instance",
-    "aws_rds_cluster",
-    "aws_lambda_function",
-    "aws_dynamodb_table",
-    "aws_ecs_cluster",
-    "aws_ecs_service",
-    "aws_eks_cluster",
-    "aws_vpc",
-    "aws_subnet",
-    "aws_security_group",
-    "aws_iam_role",
-    "aws_kms_key",
-    "aws_cloudwatch_log_group",
-    "aws_ecr_repository",
-    "aws_elasticache_cluster",
-    "aws_elasticsearch_domain",
-    "aws_opensearch_domain",
-    "aws_route53_zone",
-    "aws_acm_certificate",
-    "aws_elb",
-    "aws_lb",
-    "aws_alb",
-    "aws_api_gateway_rest_api",
-    "aws_apigatewayv2_api",
-}
-
 
 def load_config(config_path: str) -> bool:
     """
@@ -80,7 +50,7 @@ def load_config(config_path: str) -> bool:
     Returns True if config was loaded successfully, False otherwise.
     Falls back to default MoJ config if file not found or YAML not available.
     """
-    global REQUIRED_TAGS, TAG_FORMATS, EXCLUDE_RESOURCES, TAGGABLE_RESOURCES
+    global REQUIRED_TAGS, TAG_FORMATS, EXCLUDE_RESOURCES
     
     if not YAML_AVAILABLE:
         print("⚠️  PyYAML not installed. Using default MoJ configuration.")
@@ -126,10 +96,6 @@ def load_config(config_path: str) -> bool:
         # Parse exclude_resources section
         if 'exclude_resources' in config:
             EXCLUDE_RESOURCES = config['exclude_resources'] or []
-        
-        # Parse taggable_resources section (optional override)
-        if 'taggable_resources' in config:
-            TAGGABLE_RESOURCES = set(config['taggable_resources'])
         
         print(f"✅ Loaded configuration from {config_path}")
         return True
@@ -231,15 +197,9 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
         resource_type = resource.get('type', '')
         resource_address = resource.get('address', '')
         
-        # Only check taggable resources
-        if resource_type not in TAGGABLE_RESOURCES:
-            continue
-        
         # Check if resource should be excluded
         if should_exclude_resource(resource_address):
             continue
-        
-        resources_checked += 1
         
         # Get tags from the resource
         # Prefer tags_all (AWS provider v3.38.0+) as it includes provider default_tags
@@ -247,11 +207,17 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
         tags_all = after.get('tags_all')
         tags = after.get('tags')
         
+        # Skip resources that don't support tagging (no tags or tags_all field)
+        if tags_all is None and tags is None:
+            continue
+        
         # Use tags_all if available, otherwise fall back to tags
         if isinstance(tags_all, dict):
             tags = tags_all
         elif not isinstance(tags, dict):
             tags = {}
+        
+        resources_checked += 1
         
         # Check each required tag
         missing_tags = []
