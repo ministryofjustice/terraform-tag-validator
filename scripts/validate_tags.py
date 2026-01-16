@@ -242,11 +242,15 @@ def validate_terraform_plan(plan_file: str, required_tags_input: str) -> int:
         resources_checked += 1
         
         # Get tags from the resource
+        # Prefer tags_all (AWS provider v3.38.0+) as it includes provider default_tags
         after = resource.get('change', {}).get('after', {})
+        tags_all = after.get('tags_all')
         tags = after.get('tags')
         
-        # Handle resources with no tags block at all (tags = None or other falsy values)
-        if not isinstance(tags, dict):
+        # Use tags_all if available, otherwise fall back to tags
+        if isinstance(tags_all, dict):
+            tags = tags_all
+        elif not isinstance(tags, dict):
             tags = {}
         
         # Check each required tag
