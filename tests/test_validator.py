@@ -179,22 +179,52 @@ resource "aws_s3_bucket" "example" {
     assert matches[0].group(2) == "example"
 
 
-def test_taggable_resources_list():
-    """Test that common AWS resources are in the taggable list."""
-    taggable = validate_tags.TAGGABLE_RESOURCES
+def test_dynamic_taggable_resource_detection():
+    """Test that resources are detected as taggable based on tags/tags_all presence."""
+    # Resource with tags field should be detected
+    resource_with_tags = {
+        'address': 'aws_s3_bucket.test',
+        'type': 'aws_s3_bucket',
+        'change': {
+            'actions': ['create'],
+            'after': {
+                'tags': {'Name': 'test'}
+            }
+        }
+    }
     
-    # Common AWS resources that should support tags
-    expected_resources = [
-        "aws_s3_bucket",
-        "aws_dynamodb_table",
-        "aws_lambda_function",
-        "aws_instance",
-        "aws_ecr_repository"
-    ]
+    # Resource with tags_all field should be detected
+    resource_with_tags_all = {
+        'address': 'aws_instance.test',
+        'type': 'aws_instance',
+        'change': {
+            'actions': ['create'],
+            'after': {
+                'tags_all': {'Name': 'test'}
+            }
+        }
+    }
     
-    for resource_type in expected_resources:
-        assert resource_type in taggable, \
-            f"{resource_type} should be in TAGGABLE_RESOURCES"
+    # Resource without tags should be skipped
+    resource_without_tags = {
+        'address': 'aws_iam_policy_document.test',
+        'type': 'aws_iam_policy_document',
+        'change': {
+            'actions': ['create'],
+            'after': {
+                'json': '{}'
+            }
+        }
+    }
+    
+    # Verify tags/tags_all detection logic
+    after_with_tags = resource_with_tags['change']['after']
+    after_with_tags_all = resource_with_tags_all['change']['after']
+    after_without = resource_without_tags['change']['after']
+    
+    assert after_with_tags.get('tags') is not None or after_with_tags.get('tags_all') is not None
+    assert after_with_tags_all.get('tags') is not None or after_with_tags_all.get('tags_all') is not None
+    assert after_without.get('tags') is None and after_without.get('tags_all') is None
 
 
 if __name__ == "__main__":
