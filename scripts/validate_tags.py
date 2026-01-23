@@ -21,7 +21,7 @@ except ImportError:
 DEFAULT_REQUIRED_TAGS = {
     "business-unit": [
         "HMPPS", "OPG", "LAA", "Central Digital",
-        "Technology Services", "HMCTS", "CICA", "Platforms"
+        "Technology Services", "HMCTS", "CICA", "OCTO"
     ],
     "application": None,  # Any value OK
     "owner": None,  # Format validated by regex below
