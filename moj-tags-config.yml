@@ -12,7 +12,7 @@ required_tags:
       - Technology Services
       - HMCTS
       - CICA
-      - Platforms
+      - OCTO
   
   application:
     description: "Full name of the application or service"
