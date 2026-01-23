@@ -29,7 +29,7 @@ def reset_config():
 def test_validates_moj_business_units(reset_config):
     """Test that only valid MoJ business units are accepted."""
     valid_units = ["HMPPS", "OPG", "LAA", "Central Digital", 
-                   "Technology Services", "HMCTS", "CICA", "Platforms"]
+                   "Technology Services", "HMCTS", "CICA", "OCTO"]
     
     for unit in valid_units:
         tags = {
@@ -111,7 +111,7 @@ def test_detects_missing_tags():
     # This would need a mock terraform plan JSON
     # Simplified test structure
     resource_tags = {
-        "business-unit": "Platforms",
+        "business-unit": "OCTO",
         "application": "Test"
         # Missing: owner, is-production, service-area, environment-name
     }
@@ -166,7 +166,7 @@ resource "aws_s3_bucket" "example" {
   bucket = "test-bucket"
   
   tags = {
-    business-unit = "Platforms"
+    business-unit = "OCTO"
   }
 }
 '''
