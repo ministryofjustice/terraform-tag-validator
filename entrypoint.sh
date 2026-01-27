@@ -30,7 +30,7 @@ fi
 # Initialize Terraform (without backend)
 echo ""
 echo "⚙️  Initializing Terraform..."
-terraform init -backend=false > /dev/null 2>&1 || {
+terraform init -backend=false -reconfigure > /dev/null 2>&1 || {
     echo "❌ Terraform init failed"
     exit 1
 }
